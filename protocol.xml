@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
-<core name="protocol" version="0.1.0">
-  <core name="logger" required_version="0.1.0"/>
+<core name="protocol" branch="master">
+  <core name="logger" required_branch="master"/>
 
   <function name="check"/>
 
