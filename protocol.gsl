@@ -35,7 +35,7 @@ function check_attributes(ctx, projecttree, ctx_logname)
   for my.ctx.attribute as a
     check_require(a, my.projecttree, my.ctx_logname)
     check_type(a, my.projecttree, my.ctx_logname)
-    debug('check attribute "$(a.name:)"')
+    debug('check attribute "$(a.name:)"', my.ctx_logname)
   endfor
 endfunction
 
@@ -56,7 +56,7 @@ function check_nodes(ctx, projecttree, ctx_logname)
   for my.ctx.node as n
     for my.projecttree. as projectnode where n.name=name()
       check_count(n, my.projecttree)
-      debug('check node "$(n.name:)"')
+      debug('check node "$(n.name:)"', my.ctx_logname)
       check_attributes(n, projectnode, my.ctx_logname + n.name)
       check_nodes(n, projectnode, my.ctx_logname + n.name + "][")
     endfor
