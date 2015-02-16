@@ -63,11 +63,12 @@ function check_nodes(ctx, projecttree, ctx_logname)
   endfor
 endfunction
 
-function protocol__check(ctx, projecttree)
+function protocol__check(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
   my.projecttree ?= root
 
   for my.ctx.protocol as p
-    check_nodes(p, my.projecttree)
+    check_nodes(p, my.projecttree, my.ctx_logname)
   endfor
 endfunction
 
