@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<core name="protocol" version="0.1.0">
+  <core name="logger" required_version="0.1.0"/>
+
+  <function name="check"/>
+
+  <todo>add default value</todo>
+  <todo>add choice node to select one among several attributes</todo>
+  <todo>add required attribute to node</todo>
+  <todo>add group</todo>
+</core>

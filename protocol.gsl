@@ -1,0 +1,78 @@
+.template 0
+
+function is_number(x)
+  return conv.number(my.x) ?? 1 ? 0
+endfunction
+
+function check_type(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= my.ctx.name
+  
+  if !defined(my.ctx.type) | !defined(my.projecttree.$(my.ctx.name))
+    return
+  endif
+  my.attr = my.projecttree.$(my.ctx.name)
+  if (my.ctx.type = "integer" | my.ctx.type = "float") & !is_number(my.attr)
+    error('attribute "$(my.ctx.name)" is integer but the value isnt.', my.ctx_logname)
+  elsif my.ctx.type = "boolean" & my.attr <> "True" & my.attr <> "False"
+    error('attribute "$(my.ctx.name)" is boolean but the value is neither True or False.', my.ctx_logname)
+  endif
+endfunction
+
+function check_require(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= my.ctx.name
+
+  if !defined(my.ctx.required) | my.ctx.required <> "True"
+    return
+  endif
+  if !defined(my.projecttree.$(my.ctx.name))
+    error('attribute "$(my.ctx.name)" is missing', my.ctx_logname)
+  endif
+endfunction
+
+function check_attributes(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= my.ctx.name
+  
+  for my.ctx.attribute as a
+    check_require(a, my.projecttree, my.ctx_logname)
+    check_type(a, my.projecttree, my.ctx_logname)
+    if global.debug
+      log('check attribute "$(a.name:)"')
+    endif
+  endfor
+endfunction
+
+function check_count(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= my.ctx.name
+  my.cnt = count(my.projecttree., my.ctx.name=name())
+  
+  if !defined(my.ctx.number) & my.cnt > 1
+    error('there is more than 1 node "$(my.ctx.name)" defined ($(my.cnt))', my.ctx_logname)
+  elsif defined(my.ctx.number) & my.ctx.number <> "*" & my.ctx.number <> my.cnt
+    error('there isnt the equal number of nodes "$(my.ctx.name)" defined ($(my.ctx.number) <> $(my.cnt))', my.ctx_logname)
+  endif
+endfunction
+
+function check_nodes(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  
+  for my.ctx.node as n
+    for my.projecttree. as projectnode where n.name=name()
+      check_count(n, my.projecttree)
+      if global.debug
+        log('check node "$(n.name:)"')
+      endif
+      check_attributes(n, projectnode, my.ctx_logname + n.name)
+      check_nodes(n, projectnode, my.ctx_logname + n.name + "][")
+    endfor
+  endfor
+endfunction
+
+function protocol__check(ctx, projecttree)
+  my.projecttree ?= root
+
+  for my.ctx.protocol as p
+    check_nodes(p, my.projecttree)
+  endfor
+endfunction
+
+.endtemplate
