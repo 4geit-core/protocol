@@ -4,6 +4,9 @@
   <core name="logger" required_branch="master"/>
 
   <function name="check"/>
+  <function name="preload"/>
+  <function name="postload"/>
+  <function name="add_content"/>
 
   <todo>add default value</todo>
   <todo>add choice node to select one among several attributes</todo>

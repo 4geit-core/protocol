@@ -67,9 +67,102 @@ function protocol__check(ctx, projecttree, ctx_logname)
   my.ctx_logname ?= ""
   my.projecttree ?= root
 
-  for my.ctx.protocol as p
-    check_nodes(p, my.projecttree, my.ctx_logname)
+  check_nodes(my.ctx, my.projecttree, my.ctx_logname)
+endfunction
+
+function compose_dst_name(node, projectnode)
+  my.dst = ''
+  for my.node.compose_dst as d
+    if defined(d.attribute)
+      my.dst += my.projectnode.$(d.attribute)
+    elsif defined(d.value)
+      my.dst += d.value
+    endif
   endfor
+  return my.dst
+endfunction
+
+function protocol__add_content(hook)
+  for projectnode.content as c where c.hook = my.hook
+    echo c.string()
+.   template 1
+$(c.:)
+.   endtemplate
+  endfor
+endfunction
+
+function pre_open(node, projectnode)
+  gsl from my.node.pre
+endfunction
+
+function post_open(node, projectnode)
+  my.cached = 0
+  if defined(my.node->compose_dst)
+    my.dst = compose_dst_name(my.node, my.projectnode)
+    my.cached = cache__open(my.dst)
+  endif
+  protocol__add_content('pre')
+  gsl from my.node.post
+  return my.cached
+endfunction
+
+function post_close(cached)
+  cache__close(my.cached)
+endfunction
+
+function preload_nodes(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  
+  for my.ctx.node as n
+    for my.projecttree. as projectnode where n.name=name()
+      debug('preload node "$(n.name:)"', my.ctx_logname)
+      if defined(n.pre)
+        if !file.exists(n.pre)
+          error('The filename $(n.pre:) does not exist.')
+        endif
+        pre_open(n, projectnode)
+      endif
+      preload_nodes(n, projectnode, my.ctx_logname + n.name + "][")
+    endfor
+  endfor
+endfunction
+
+function postload_nodes(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  
+  for my.ctx.node as n
+    for my.projecttree. as projectnode where n.name=name()
+      debug('postload node "$(n.name:)"', my.ctx_logname)
+      if defined(n.post)
+        if !file.exists(n.post)
+          error('The filename $(n.post:) does not exist.')
+        endif
+        my.cached = post_open(n, projectnode)
+      endif
+      postload_nodes(n, projectnode, my.ctx_logname + n.name + "][")
+      if defined(n.post_end)
+        gsl from n.post_end
+      endif
+      protocol__add_content('post')
+      if defined(my.cached) & my.cached <> 0
+        post_close(my.cached)
+      endif
+    endfor
+  endfor
+endfunction
+
+function protocol__preload(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  my.projecttree ?= root
+
+  preload_nodes(my.ctx, my.projecttree, my.ctx_logname)
+endfunction
+
+function protocol__postload(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  my.projecttree ?= root
+
+  postload_nodes(my.ctx, my.projecttree, my.ctx_logname)
 endfunction
 
 .endtemplate
