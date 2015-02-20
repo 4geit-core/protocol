@@ -63,7 +63,7 @@ function check_nodes(ctx, projecttree, ctx_logname)
   endfor
 endfunction
 
-function protocol__check(ctx, projecttree, ctx_logname)
+function global.protocol__check(ctx, projecttree, ctx_logname)
   my.ctx_logname ?= ""
   my.projecttree ?= root
 
@@ -82,7 +82,7 @@ function compose_dst_name(node, projectnode)
   return my.dst
 endfunction
 
-function protocol__add_content(hook)
+function global.protocol__add_content(hook)
   for projectnode.content as c where c.hook = my.hook
     echo c.string()
 .   template 1
@@ -151,14 +151,14 @@ function postload_nodes(ctx, projecttree, ctx_logname)
   endfor
 endfunction
 
-function protocol__preload(ctx, projecttree, ctx_logname)
+function global.protocol__preload(ctx, projecttree, ctx_logname)
   my.ctx_logname ?= ""
   my.projecttree ?= root
 
   preload_nodes(my.ctx, my.projecttree, my.ctx_logname)
 endfunction
 
-function protocol__postload(ctx, projecttree, ctx_logname)
+function global.protocol__postload(ctx, projecttree, ctx_logname)
   my.ctx_logname ?= ""
   my.projecttree ?= root
 
