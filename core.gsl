@@ -35,7 +35,11 @@ function check_attributes(ctx, projecttree, ctx_logname)
   for my.ctx.attribute as a
     check_require(a, my.projecttree, my.ctx_logname)
     check_type(a, my.projecttree, my.ctx_logname)
-    debug('check attribute "$(a.name:)"', my.ctx_logname)
+    if defined(my.projecttree.$(a.name))
+      debug('check attribute "$(a.name:)" with value "$(my.projecttree.$(a.name):)"', my.ctx_logname)
+    else
+      debug('check attribute "$(a.name:)"', my.ctx_logname)
+    endif
   endfor
 endfunction
 
@@ -52,6 +56,10 @@ endfunction
 
 function check_nodes(ctx, projecttree, ctx_logname)
   my.ctx_logname ?= ""
+
+  for my.ctx.group as g
+    check_nodes(g, my.projecttree, my.ctx_logname + n.name + "][")  
+  endfor
   
   for my.ctx.node as n
     for my.projecttree. as projectnode where n.name=name()
@@ -67,19 +75,10 @@ function global.protocol__check(ctx, projecttree, ctx_logname)
   my.ctx_logname ?= ""
   my.projecttree ?= root
 
-  check_nodes(my.ctx, my.projecttree, my.ctx_logname)
-endfunction
+  reference__process('node', 'node', my.ctx)
+  reference__process('group', 'group', my.ctx)
 
-function compose_dst_name(node, projectnode)
-  my.dst = ''
-  for my.node.compose_dst as d
-    if defined(d.attribute)
-      my.dst += my.projectnode.$(d.attribute)
-    elsif defined(d.value)
-      my.dst += d.value
-    endif
-  endfor
-  return my.dst
+  check_nodes(my.ctx, my.projecttree, my.ctx_logname)
 endfunction
 
 function global.protocol__add_content(hook, ctx_name)
@@ -97,8 +96,8 @@ endfunction
 
 function post_open(node, ctx_name, projectnode)
   my.cached = 0
-  if defined(my.node->compose_dst)
-    my.dst = compose_dst_name(my.node, my.projectnode)
+  if defined(my.node.dst)
+    my.dst = string__convert_variables(my.node.dst, my.projectnode)
     my.cached = cache__open(my.dst)
   endif
   protocol__add_content('begin', my.ctx_name)
@@ -112,7 +111,11 @@ endfunction
 
 function preload_nodes(ctx, ctx_name, projecttree, ctx_logname)
   my.ctx_logname ?= ""
-  
+
+  for my.ctx.group as g
+    preload_nodes(g, my.ctx_name, my.projecttree, my.ctx_logname + n.name + "][")  
+  endfor
+
   for my.ctx.node as n
     for my.projecttree. as projectnode where n.name=name()
       debug('preload node "$(n.name:)"', my.ctx_logname)
@@ -129,7 +132,11 @@ endfunction
 
 function postload_nodes(ctx, ctx_name, projecttree, ctx_logname)
   my.ctx_logname ?= ""
-  
+
+  for my.ctx.group as g
+    postload_nodes(g, my.ctx_name, my.projecttree, my.ctx_logname + n.name + "][")  
+  endfor
+
   for my.ctx.node as n
     for my.projecttree. as projectnode where n.name=name()
       debug('postload node "$(n.name:)"', my.ctx_logname)
