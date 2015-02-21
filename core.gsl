@@ -75,13 +75,6 @@ function global.protocol__check(ctx, projecttree, ctx_logname)
   my.ctx_logname ?= ""
   my.projecttree ?= root
 
-  my.count = 0
-  while my.count < 10
-    reference__process('node', 'node', my.ctx)
-    reference__process('group', 'group', my.ctx)
-    my.count += 1
-  endwhile
-
   check_nodes(my.ctx, my.projecttree, my.ctx_logname)
 endfunction
 
@@ -109,8 +102,11 @@ function post_open(node, ctx_name, projectnode)
   return my.cached
 endfunction
 
-function post_close(cached)
+function post_close(node, cached)
   cache__close(my.cached)
+  if defined(my.node.dst) & defined(my.node.binary) & my.node.binary = "True"
+    chmod('+x', global.build_path + my.cached)
+  endif
 endfunction
 
 function preload_nodes(ctx, ctx_name, projecttree, ctx_logname)
@@ -156,7 +152,7 @@ function postload_nodes(ctx, ctx_name, projecttree, ctx_logname)
       endif
       protocol__add_content('end', my.ctx_name)
       if defined(my.cached) & my.cached <> 0
-        post_close(my.cached)
+        post_close(n, my.cached)
       endif
     endfor
   endfor
