@@ -11,5 +11,5 @@
   <todo>add default value</todo>
   <todo>add choice node to select one among several attributes</todo>
   <todo>add required attribute to node</todo>
-  <todo>add group</todo>
+  <todo>handle recursive nodes</todo>
 </core>
