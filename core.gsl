@@ -75,8 +75,12 @@ function global.protocol__check(ctx, projecttree, ctx_logname)
   my.ctx_logname ?= ""
   my.projecttree ?= root
 
-  reference__process('node', 'node', my.ctx)
-  reference__process('group', 'group', my.ctx)
+  my.count = 0
+  while my.count < 10
+    reference__process('node', 'node', my.ctx)
+    reference__process('group', 'group', my.ctx)
+    my.count += 1
+  endwhile
 
   check_nodes(my.ctx, my.projecttree, my.ctx_logname)
 endfunction
