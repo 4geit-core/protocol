@@ -62,7 +62,7 @@ function check_nodes(ctx, projecttree, ctx_logname)
   endfor
   
   for my.ctx.node as n
-    for my.projecttree. as projectnode where n.name=name()
+    for my.projecttree. as projectnode where defined(n.name) & n.name=name()
       check_count(n, my.projecttree)
       debug('check node "$(n.name:)"', my.ctx_logname)
       check_attributes(n, projectnode, my.ctx_logname + n.name)
@@ -117,7 +117,7 @@ function preload_nodes(ctx, ctx_name, projecttree, ctx_logname)
   endfor
 
   for my.ctx.node as n
-    for my.projecttree. as projectnode where n.name=name()
+    for my.projecttree. as projectnode where defined(n.name) & n.name=name()
       debug('preload node "$(n.name:)"', my.ctx_logname)
       if defined(n.pre)
         if !file.exists(n.pre)
@@ -138,7 +138,7 @@ function postload_nodes(ctx, ctx_name, projecttree, ctx_logname)
   endfor
 
   for my.ctx.node as n
-    for my.projecttree. as projectnode where n.name=name()
+    for my.projecttree. as projectnode where defined(n.name) & n.name=name()
       debug('postload node "$(n.name:)"', my.ctx_logname)
       if defined(n.post)
         if !file.exists(n.post)
