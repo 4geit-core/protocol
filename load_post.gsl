@@ -9,24 +9,6 @@ $(c.:)
   endfor
 endfunction
 
-function post_open
-  my.cached = 0
-  if defined(pn.dst)
-    my.dst = string__convert_variables(pn.dst, projectnode)
-    my.cached = cache__open(my.dst)
-  endif
-  protocol__add_content('begin', pn.resource_name)
-  gsl from pl.src
-  return my.cached
-endfunction
-
-function post_close(cached)
-  cache__close(my.cached)
-  if defined(pn.dst) & defined(pn.binary) & pn.binary = "True"
-    chmod('+x', global.build_path + my.cached)
-  endif
-endfunction
-
 function load_post_nodes(projecttree, ctx_logname)
   my.ctx_logname ?= ""
 
@@ -34,6 +16,9 @@ function load_post_nodes(projecttree, ctx_logname)
     if class(projectnode) = "XML value"
       next
     endif
+
+    my.openfiles = XML.new()
+
     for projectnode.protocol_node as pn
       debug('post load node "$(pn.name:)" (begin)', my.ctx_logname)
       
@@ -42,7 +27,17 @@ function load_post_nodes(projecttree, ctx_logname)
         if !file.exists(pl.src)
           error('The filename $(pl.src:) does not exist.')
         endif
-        my.cached = post_open()
+        if defined(pn.dst)
+          my.dst = string__convert_variables(pn.dst, projectnode)
+          new my.openfiles.item as i
+            define i.cached = cache__open(my.dst)
+            if defined(pn.binary)
+              define i.binary = pn.binary
+            endif
+          endnew
+        endif
+        protocol__add_content('begin', pn.resource_name)
+        gsl from pl.src
         directory.setcwd(global.forgeit_path)
       endfor      
     endfor
@@ -50,7 +45,7 @@ function load_post_nodes(projecttree, ctx_logname)
     load_post_nodes(projectnode, my.ctx_logname + name(projectnode) + "][")
 
     for projectnode.protocol_node as pn
-      debug('post load node "$(pn.name:)" (begin)', my.ctx_logname)
+      debug('post load node "$(pn.name:)" (end)', my.ctx_logname)
 
       for pn.protocol_load as pl where pl.hook = 'post_end'
         directory.setcwd(get_protocol_resource_path(pn))
@@ -62,9 +57,12 @@ function load_post_nodes(projecttree, ctx_logname)
       endfor
       
       protocol__add_content('end', pn.resource_name)
-      
-      if defined(my.cached) & my.cached <> 0
-        post_close(my.cached)
+    endfor
+
+    for my.openfiles.item as i
+      cache__close(i.cached)
+      if defined(i.binary) & i.binary = "True"
+        chmod('+x', global.build_path + i.cached)
       endif
     endfor
   endfor
