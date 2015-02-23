@@ -4,8 +4,10 @@
   <core name="logger" required_branch="master"/>
 
   <function name="check"/>
-  <function name="preload"/>
-  <function name="postload"/>
+  <function name="combine"/>
+  <function name="load_pre_check"/>
+  <function name="load_pre"/>
+  <function name="load_post"/>
   <function name="add_content"/>
 
   <todo>add default value</todo>
