@@ -1,0 +1,67 @@
+.template 0
+
+function is_number(x)
+  return conv.number(my.x) ?? 1 ? 0
+endfunction
+
+function check_type(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= my.ctx.name
+  
+  if !defined(my.ctx.type) | !defined(my.projecttree.$(my.ctx.name))
+    return
+  endif
+  my.attr = my.projecttree.$(my.ctx.name)
+  if (my.ctx.type = "integer" | my.ctx.type = "float") & !is_number(my.attr)
+    error('attribute "$(my.ctx.name)" is integer but the value isnt.', my.ctx_logname)
+  elsif my.ctx.type = "boolean" & my.attr <> "True" & my.attr <> "False"
+    error('attribute "$(my.ctx.name)" is boolean but the value is neither True or False.', my.ctx_logname)
+  endif
+endfunction
+
+function check_require(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= my.ctx.name
+
+  if !defined(my.ctx.required) | my.ctx.required <> "True"
+    return
+  endif
+  if !defined(my.projecttree.$(my.ctx.name))
+    error('attribute "$(my.ctx.name)" is missing', my.ctx_logname)
+  endif
+endfunction
+
+function check_attributes(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= my.ctx.name
+  
+  for my.ctx.protocol_attribute as a
+    check_require(a, my.projecttree, my.ctx_logname)
+    check_type(a, my.projecttree, my.ctx_logname)
+    if defined(my.projecttree.$(a.name))
+      debug('check attribute "$(a.name:)" with value "$(my.projecttree.$(a.name):)"', my.ctx_logname)
+    else
+      debug('check attribute "$(a.name:)"', my.ctx_logname)
+    endif
+  endfor
+endfunction
+
+function check_nodes(projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+
+  for my.projecttree. as projectnode
+    if class(projectnode) = "XML value"
+      next
+    endif
+    for projectnode.protocol_node as pn
+      debug('check node "$(pn.name:)"', my.ctx_logname)
+      check_attributes(pn, projectnode, my.ctx_logname + pn.name)
+    endfor
+    check_nodes(projectnode, my.ctx_logname + name(projectnode) + "][")
+  endfor
+endfunction
+
+function global.protocol__check(projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  my.projecttree ?= root
+  check_nodes(my.projecttree, my.ctx_logname)
+endfunction
+
+.endtemplate

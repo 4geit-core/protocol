@@ -1,0 +1,31 @@
+.template 0
+
+function load_pre_check_nodes(projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+
+  for my.projecttree. as projectnode
+    if class(projectnode) = "XML value"
+      next
+    endif
+    for projectnode.protocol_node as pn
+      debug('pre_check load node "$(pn.name:)"', my.ctx_logname)
+      for pn.protocol_load as pl where pl.hook = 'pre_check'
+        directory.setcwd(get_protocol_resource_path(pn))
+        if !file.exists(pl.src)
+          error('The filename $(pl.src:) does not exist.')
+        endif
+        gsl from pl.src
+        directory.setcwd(global.forgeit_path)
+      endfor
+    endfor
+    load_pre_check_nodes(projectnode, my.ctx_logname + name(projectnode) + "][")
+  endfor
+endfunction
+
+function global.protocol__load_pre_check(projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  my.projecttree ?= root
+  load_pre_check_nodes(my.projecttree, my.ctx_logname)
+endfunction
+
+.endtemplate

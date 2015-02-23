@@ -1,0 +1,91 @@
+.template 0
+
+function add_context(ctx, global_ctx)
+  define my.ctx.resource = name(my.global_ctx)
+  if defined(my.global_ctx.name)
+    define my.ctx.resource_name = my.global_ctx.name
+  endif
+  if defined(my.global_ctx.branch)
+    define my.ctx.resource_branch = my.global_ctx.branch
+  endif
+endfunction
+
+function copy_hook(name, global_ctx)
+  if defined(n.$(my.name))
+    new pn.protocol_load as l
+      define l.hook = my.name
+      define l.src = n.$(my.name)
+    endnew
+  endif
+endfunction
+
+function copy_attributes
+  for n.attribute as a
+    new pn.protocol_attribute as pa
+      pa.name = a.name
+      if defined(a.required)
+        pa.required = a.required
+      endif
+      if defined(a.type)
+        pa.required = a.type
+      endif
+    endnew
+  endfor
+endfunction
+
+function copy_node(global_ctx)
+  new projectnode.protocol_node as pn
+    add_context(pn, my.global_ctx)
+    define pn.name = n.name
+    if defined(n.number)
+      define pn.number = n.number
+    endif
+    if defined(n.dst)
+      define pn.dst = n.dst
+    endif
+    if defined(n.binary)
+      define pn.binary = n.binary
+    endif
+    copy_attributes()
+    copy_hook('pre_check', my.global_ctx)
+    copy_hook('pre', my.global_ctx)
+    copy_hook('post', my.global_ctx)
+    copy_hook('post_end', my.global_ctx)
+  endnew
+endfunction
+
+function check_count(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= my.ctx.name
+  my.cnt = count(my.projecttree., my.ctx.name=name())
+  
+  if !defined(my.ctx.number) & my.cnt > 1
+    error('there is more than 1 node "$(my.ctx.name)" defined ($(my.cnt))', my.ctx_logname)
+  elsif defined(my.ctx.number) & my.ctx.number <> "*" & my.ctx.number <> my.cnt
+    error('there isnt the equal number of nodes "$(my.ctx.name)" defined ($(my.ctx.number) <> $(my.cnt))', my.ctx_logname)
+  endif
+endfunction
+
+function combine_nodes(ctx, global_ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+
+  for my.ctx.group as g
+    combine_nodes(g, my.projecttree, my.ctx_logname + n.name + "][")  
+  endfor
+  
+  for my.ctx.node as n
+    for my.projecttree. as projectnode where defined(n.name) & n.name=name()
+      check_count(n, my.projecttree)
+      debug('node "$(n.name:)"', "combine][$(name(my.global_ctx):)][$(my.ctx_logname:)")
+      copy_node(my.global_ctx)
+      combine_nodes(n, my.global_ctx, projectnode, my.ctx_logname + n.name + "][")
+    endfor
+  endfor
+endfunction
+
+function global.protocol__combine(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  my.projecttree ?= root
+  combine_nodes(my.ctx, my.ctx, my.projecttree, my.ctx_logname)
+endfunction
+
+.endtemplate
