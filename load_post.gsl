@@ -1,7 +1,7 @@
 .template 0
 
 function global.protocol__add_content(hook, ctx_name)
-  debug('add_content')
+  # debug('add_content')
   for projectnode.content as c where c.hook = my.hook & (!defined(c.context) | (defined(c.context) & c.context = my.ctx_name))
 .   template 1
 $(c.:)
@@ -11,6 +11,11 @@ endfunction
 
 function load_post_nodes(projecttree, ctx_logname)
   my.ctx_logname ?= ""
+  if my.ctx_logname <> ""
+    my.ctx_logname_content = "][" + my.ctx_logname
+  else
+    my.ctx_logname_content = my.ctx_logname
+  endif
 
   for my.projecttree. as projectnode
     if class(projectnode) = "XML value"
@@ -20,7 +25,7 @@ function load_post_nodes(projecttree, ctx_logname)
     my.openfiles = XML.new()
 
     for projectnode.protocol_node as pn
-      debug('post load node "$(pn.name:)" (begin)', my.ctx_logname)
+      debug('post load node', "begin][" + pn.resource_display + my.ctx_logname_content + "][" + pn.name + ":" + item(projectnode))
       
       for pn.protocol_load as pl where pl.hook = 'post'
         directory.setcwd(get_protocol_resource_path(pn))
@@ -42,10 +47,10 @@ function load_post_nodes(projecttree, ctx_logname)
       endfor      
     endfor
     
-    load_post_nodes(projectnode, my.ctx_logname + name(projectnode) + "][")
+    load_post_nodes(projectnode, my.ctx_logname + name(projectnode) + '/')
 
     for projectnode.protocol_node as pn
-      debug('post load node "$(pn.name:)" (end)', my.ctx_logname)
+      debug('post load node', "end][" + pn.resource_display + my.ctx_logname_content + "][" + pn.name + ":" + item(projectnode))
 
       for pn.protocol_load as pl where pl.hook = 'post_end'
         directory.setcwd(get_protocol_resource_path(pn))

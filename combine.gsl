@@ -2,8 +2,10 @@
 
 function add_context(ctx, global_ctx)
   define my.ctx.resource = name(my.global_ctx)
+  define my.ctx.resource_display = my.ctx.resource
   if defined(my.global_ctx.name)
     define my.ctx.resource_name = my.global_ctx.name
+    define my.ctx.resource_display = my.ctx.resource_name
   endif
   if defined(my.global_ctx.branch)
     define my.ctx.resource_branch = my.global_ctx.branch
@@ -33,19 +35,20 @@ function copy_attributes
   endfor
 endfunction
 
+function copy_node_attribute(name)
+  if defined(n.$(my.name))
+    define pn.$(my.name) = n.$(my.name)
+  endif
+endfunction
+
 function copy_node(global_ctx)
   new projectnode.protocol_node as pn
     add_context(pn, my.global_ctx)
     define pn.name = n.name
-    if defined(n.number)
-      define pn.number = n.number
-    endif
-    if defined(n.dst)
-      define pn.dst = n.dst
-    endif
-    if defined(n.binary)
-      define pn.binary = n.binary
-    endif
+    copy_node_attribute('number')
+    copy_node_attribute('dst')
+    copy_node_attribute('binary')
+    copy_node_attribute('debug')
     copy_attributes()
     copy_hook('pre_check', my.global_ctx)
     copy_hook('pre', my.global_ctx)
