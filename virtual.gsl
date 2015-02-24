@@ -1,0 +1,33 @@
+.template 0
+
+function virtual_nodes(ctx, global_ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+
+  for my.ctx.group as g
+    virtual_nodes(g, my.projecttree, my.ctx_logname + n.name + "][")  
+  endfor
+
+  for my.ctx.node as n
+    for my.projecttree. as projectnode where defined(n.name) & n.name=name()
+      debug('node "$(n.name:)"', "virtual][$(name(my.global_ctx):)][$(my.ctx_logname:)")
+      for n.node as nv where defined(nv.name) & defined(nv.virtual) & nv.virtual = "True"
+        new projectnode.$(nv.name) as newnode
+          for nv.node as nc where defined(nc.name)
+            for projectnode. as item where name() <> nv.name & name() = nc.name
+              move item to newnode
+            endfor
+          endfor
+        endnew
+      endfor
+      virtual_nodes(n, my.global_ctx, projectnode, my.ctx_logname + n.name + "][")
+    endfor
+  endfor
+endfunction
+
+function global.protocol__virtual(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  my.projecttree ?= root
+  virtual_nodes(my.ctx, my.ctx, my.projecttree, my.ctx_logname)
+endfunction
+
+.endtemplate

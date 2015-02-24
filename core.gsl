@@ -4,8 +4,10 @@ function get_protocol_resource_path(item)
   return "$(global.resource_prefix:)/$(my.item.resource:)/$(my.item.resource_name:)_$(my.item.resource_branch:)"
 endfunction
 
-gsl from "check.gsl"
+gsl from "add.gsl"
+gsl from "virtual.gsl"
 gsl from "combine.gsl"
+gsl from "check.gsl"
 gsl from "load_pre_check.gsl"
 gsl from "load_pre.gsl"
 gsl from "load_post.gsl"
