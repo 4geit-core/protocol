@@ -11,13 +11,17 @@ function virtual_nodes(ctx, global_ctx, projecttree, ctx_logname)
     for my.projecttree. as projectnode where defined(n.name) & n.name=name()
       debug('node "$(n.name:)"', "virtual][$(name(my.global_ctx):)][$(my.ctx_logname:)")
       for n.node as nv where defined(nv.name) & defined(nv.virtual) & nv.virtual = "True"
-        new projectnode.$(nv.name) as newnode
-          for nv.node as nc where defined(nc.name)
-            for projectnode. as item where name() <> nv.name & name() = nc.name
-              move item to newnode
+        for nv.$(nv.name) as item
+          copy item to projectnode
+        else
+          new projectnode.$(nv.name) as newnode
+            for nv.node as nc where defined(nc.name)
+              for projectnode. as item where name() <> nv.name & name() = nc.name
+                move item to newnode
+              endfor
             endfor
-          endfor
-        endnew
+          endnew
+        endfor
       endfor
       virtual_nodes(n, my.global_ctx, projectnode, my.ctx_logname + n.name + "][")
     endfor
