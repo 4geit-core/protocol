@@ -1,17 +1,5 @@
 .template 0
 
-function add_context(ctx, global_ctx)
-  define my.ctx.resource = name(my.global_ctx)
-  define my.ctx.resource_display = my.ctx.resource
-  if defined(my.global_ctx.name)
-    define my.ctx.resource_name = my.global_ctx.name
-    define my.ctx.resource_display = my.ctx.resource_name
-  endif
-  if defined(my.global_ctx.branch)
-    define my.ctx.resource_branch = my.global_ctx.branch
-  endif
-endfunction
-
 function copy_hook(name, global_ctx)
   if defined(n.virtual) & defined(projectnode.$(my.name))
     new pn.protocol_load as l

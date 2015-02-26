@@ -26,25 +26,29 @@ function load_post_nodes(projecttree, ctx_logname)
 
     for projectnode.protocol_node as pn
       debug('post load node', "begin][" + pn.resource_display + my.ctx_logname_content + "][" + pn.name + ":" + item(projectnode))
+
+      directory.setcwd(get_protocol_resource_path(pn))
       
+      if defined(pn.dst)
+        my.dst = string__convert_variables(pn.dst, projectnode)
+        new my.openfiles.item as i
+          define i.cached = cache__open(my.dst)
+          if defined(pn.binary)
+            define i.binary = pn.binary
+          endif
+        endnew
+      endif
+
+      protocol__add_content('begin', pn.resource_name)
+
       for pn.protocol_load as pl where pl.hook = 'post'
-        directory.setcwd(get_protocol_resource_path(pn))
         if !file.exists(pl.src)
           error('The filename $(pl.src:) does not exist.')
         endif
-        if defined(pn.dst)
-          my.dst = string__convert_variables(pn.dst, projectnode)
-          new my.openfiles.item as i
-            define i.cached = cache__open(my.dst)
-            if defined(pn.binary)
-              define i.binary = pn.binary
-            endif
-          endnew
-        endif
-        protocol__add_content('begin', pn.resource_name)
         gsl from pl.src
-        directory.setcwd(global.forgeit_path)
-      endfor      
+      endfor
+
+      directory.setcwd(global.forgeit_path)
     endfor
     
     load_post_nodes(projectnode, my.ctx_logname + name(projectnode) + '/')
@@ -52,15 +56,17 @@ function load_post_nodes(projecttree, ctx_logname)
     for projectnode.protocol_node as pn
       debug('post load node', "end][" + pn.resource_display + my.ctx_logname_content + "][" + pn.name + ":" + item(projectnode))
 
+      directory.setcwd(get_protocol_resource_path(pn))
+
       for pn.protocol_load as pl where pl.hook = 'post_end'
-        directory.setcwd(get_protocol_resource_path(pn))
         if !file.exists(pl.src)
           error('The filename $(pl.src:) does not exist.')
         endif
         gsl from pl.src
-        directory.setcwd(global.forgeit_path)
       endfor
-      
+
+      directory.setcwd(global.forgeit_path)
+
       protocol__add_content('end', pn.resource_name)
     endfor
 

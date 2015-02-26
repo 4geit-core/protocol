@@ -1,11 +1,24 @@
 .template 0
 
+function add_context(ctx, global_ctx)
+  define my.ctx.resource = name(my.global_ctx)
+  define my.ctx.resource_display = my.ctx.resource
+  if defined(my.global_ctx.name)
+    define my.ctx.resource_name = my.global_ctx.name
+    define my.ctx.resource_display = my.ctx.resource_name
+  endif
+  if defined(my.global_ctx.branch)
+    define my.ctx.resource_branch = my.global_ctx.branch
+  endif
+endfunction
+
 function get_protocol_resource_path(item)
   return "$(global.resource_prefix:)/$(my.item.resource:)/$(my.item.resource_name:)_$(my.item.resource_branch:)"
 endfunction
 
 gsl from "add.gsl"
 gsl from "virtual.gsl"
+gsl from "load_pre_combine.gsl"
 gsl from "combine.gsl"
 gsl from "check.gsl"
 gsl from "load_pre_check.gsl"

@@ -1,0 +1,34 @@
+.template 0
+
+function load_pre_combine_nodes(ctx, global_ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+
+  for my.ctx.group as g
+    load_pre_combine_nodes(g, my.projecttree, my.ctx_logname + n.name + "][")  
+  endfor
+
+  for my.ctx.node as n
+    for my.projecttree. as projectnode where defined(n.name) & n.name=name()
+      debug('node "$(n.name:)"', "load_pre_combine][$(name(my.global_ctx):)][$(my.ctx_logname:)")
+      if defined(n.pre_combine)
+        my.context = XML.new()
+        add_context(my.context, my.global_ctx)
+        directory.setcwd(get_protocol_resource_path(my.context))
+        if !file.exists(n.pre_combine)
+          error('The filename $(n.pre_combine:) does not exist.')
+        endif
+        gsl from n.pre_combine
+        directory.setcwd(global.forgeit_path)
+      endif
+      load_pre_combine_nodes(n, my.global_ctx, projectnode, my.ctx_logname + n.name + "][")
+    endfor
+  endfor
+endfunction
+
+function global.protocol__load_pre_combine(ctx, projecttree, ctx_logname)
+  my.ctx_logname ?= ""
+  my.projecttree ?= root
+  load_pre_combine_nodes(my.ctx, my.ctx, my.projecttree, my.ctx_logname)
+endfunction
+
+.endtemplate
