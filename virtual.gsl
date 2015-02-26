@@ -15,11 +15,13 @@ function virtual_nodes(ctx, global_ctx, projecttree, ctx_logname)
           copy item to projectnode
         else
           new projectnode.$(nv.name) as newnode
-            for nv.node as nc where defined(nc.name)
-              for projectnode. as item where name() <> nv.name & name() = nc.name
-                move item to newnode
+            if defined(nv.copy) & nv.copy = "True"
+              for nv.node as nc where defined(nc.name)
+                for projectnode. as item where name() <> nv.name & name() = nc.name
+                  move item to newnode
+                endfor
               endfor
-            endfor
+            endif
           endnew
         endfor
       endfor
