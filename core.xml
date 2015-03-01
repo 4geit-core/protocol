@@ -13,4 +13,5 @@
   <todo>add default value</todo>
   <todo>add choice node to select one among several attributes</todo>
   <todo>add required attribute to node</todo>
+  <todo>add required attribute to node XML value item (cf. projectnode. )</todo>
 </core>
