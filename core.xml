@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<core name="protocol" branch="master">
+<core name="protocol" branch="master" description="4i core library handling resource protocols and hook-based loading">
   <core name="logger" required_branch="master"/>
 
   <function name="check"/>
