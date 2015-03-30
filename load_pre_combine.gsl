@@ -17,17 +17,20 @@
 # Caner Candan <caner@candan.fr>, http://caner.candan.fr
 #
 
-function load_pre_combine_nodes(ctx, global_ctx, projecttree, ctx_logname)
+function load_pre_combine_nodes(ctx, global_ctx, priority, projecttree, ctx_logname)
   my.ctx_logname ?= ""
 
   for my.ctx.group as g
-    load_pre_combine_nodes(g, my.projecttree, my.ctx_logname + n.name + "][")  
+    load_pre_combine_nodes(g, my.global_ctx, my.priority, my.projecttree, my.ctx_logname + n.name + "][")
   endfor
 
   for my.ctx.node as n
     for my.projecttree. as projectnode where defined(n.name) & n.name=name()
       debug('node "$(n.name:)"', "load_pre_combine][$(name(my.global_ctx):)][$(my.ctx_logname:)")
-      if defined(n.pre_combine)
+      if !defined(n.priority)
+        define n.priority = "normal"
+      endif
+      if defined(n.pre_combine) & n.priority = my.priority
         my.context = XML.new()
         add_context(my.context, my.global_ctx)
         directory.setcwd(get_protocol_resource_path(my.context))
@@ -37,15 +40,16 @@ function load_pre_combine_nodes(ctx, global_ctx, projecttree, ctx_logname)
         gsl from n.pre_combine
         directory.setcwd(global.forgeit_path)
       endif
-      load_pre_combine_nodes(n, my.global_ctx, projectnode, my.ctx_logname + n.name + "][")
+      load_pre_combine_nodes(n, my.global_ctx, my.priority, projectnode, my.ctx_logname + n.name + "][")
     endfor
   endfor
 endfunction
 
-function global.protocol__load_pre_combine(ctx, projecttree, ctx_logname)
+function global.protocol__load_pre_combine(ctx, priority, projecttree, ctx_logname)
   my.ctx_logname ?= ""
+  my.priority ?= "normal"
   my.projecttree ?= root
-  load_pre_combine_nodes(my.ctx, my.ctx, my.projecttree, my.ctx_logname)
+  load_pre_combine_nodes(my.ctx, my.ctx, my.priority, my.projecttree, my.ctx_logname)
 endfunction
 
 .endtemplate

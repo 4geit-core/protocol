@@ -3,8 +3,11 @@
 <core name="protocol" branch="master" description="4i core library handling resource protocols and hook-based loading">
   <core name="logger" required_branch="master"/>
 
-  <function name="check"/>
+  <function name="add"/>
+  <function name="virtual"/>
+  <function name="load_pre_combine"/>
   <function name="combine"/>
+  <function name="check"/>
   <function name="load_pre_check"/>
   <function name="load_pre"/>
   <function name="load_post"/>
