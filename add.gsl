@@ -21,7 +21,7 @@ function add_nodes(ctx, global_ctx, projecttree, ctx_logname)
   my.ctx_logname ?= ""
 
   for my.ctx.group as g
-    add_nodes(g, my.projecttree, my.ctx_logname + n.name + "][")  
+    add_nodes(g, my.global_ctx, my.projecttree, my.ctx_logname + n.name + "][")  
   endfor
 
   for my.ctx.node as n
